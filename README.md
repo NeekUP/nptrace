@@ -7,7 +7,6 @@ jsoncfg := nptrace.NewJsonEncoderConfig(time.StampMicro, func(d time.Duration) [
 })
 cfg := nptrace.NewJsonEncoder(jsoncfg)
 tracer := nptrace.NewTracer(cfg, traceWriter)
-
 ```
 
 Middleware:
