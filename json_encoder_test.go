@@ -1,12 +1,15 @@
 package nptrace
 
 import (
+	"strconv"
 	"testing"
 	"time"
 )
 
 func TestJsonEncoder_Encode(t *testing.T) {
-	cfg := &JsonEncoderConfig{TimeFormat: time.RFC3339}
+	cfg := NewJsonEncoderConfig(time.RFC3339, func(d time.Duration) []byte {
+		return []byte(strconv.FormatInt(d.Nanoseconds(), 10))
+	})
 	encoder := NewJsonEncoder(cfg)
 
 	npt := NewTracer(nil, nil)
@@ -23,7 +26,8 @@ func TestJsonEncoder_Encode(t *testing.T) {
 	task.Trace.Children = []*Trace{}
 	task.Trace.Children = append(task.Trace.Children, s)
 
-	expected := []byte(`{"id":"test","time":"2010-01-01T02:02:03Z","trace":{"name":"root","duration":0,"args":[],"traces":[{"name":"f 1","duration":1001,"args":["1","ds",1,"2010-01-01T02:02:03Z",true,"0.1+0.2i",34359738368],"traces":[]}]}}`)
+	expected := []byte(`{"id":"test","time":"2010-01-01T02:02:03Z","trace":{"name":"root","duration":0,"args":[],"traces":[{"name":"f 1","duration":1001,"args":["1","ds",1,"2010-01-01T02:02:03Z",true,"0.1+0.2i",34359738368],"traces":[]}]}}
+`)
 	result := encoder.Encode(task)
 	for i := 0; i < len(result); i++ {
 		if result[i] != expected[i] {

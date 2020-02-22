@@ -6,8 +6,16 @@ import (
 	"time"
 )
 
+func NewJsonEncoderConfig(timeFormat string, durationFormat func(d time.Duration) []byte) *JsonEncoderConfig {
+	return &JsonEncoderConfig{
+		TimeFormat:     timeFormat,
+		DurationFormat: durationFormat,
+	}
+}
+
 type JsonEncoderConfig struct {
-	TimeFormat string
+	TimeFormat     string
+	DurationFormat func(d time.Duration) []byte
 }
 
 func NewJsonEncoder(cfg *JsonEncoderConfig) Encoder {
@@ -33,6 +41,7 @@ func (enc *jsonEncoder) Encode(npt *Task) []byte {
 	enc.append(',')
 	enc.addToken("trace", npt.Trace)
 	enc.append('}')
+	enc.append('\n')
 
 	return enc.buf
 }
@@ -102,7 +111,7 @@ func (enc *jsonEncoder) addValue(value interface{}) {
 	case time.Time:
 		enc.addTime(v)
 	case time.Duration:
-		enc.buf = strconv.AppendInt(enc.buf, v.Nanoseconds(), 10)
+		enc.appendBytes(enc.cfg.DurationFormat(v))
 	case *Trace:
 		enc.encodeTrace(v)
 	case []*Trace:
