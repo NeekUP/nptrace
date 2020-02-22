@@ -18,59 +18,59 @@ func NewTracer(enc Encoder, writer io.Writer) *NPTrace {
 }
 
 type Task struct {
-	id      string
-	start   time.Time
-	trace   *Trace
+	Id      string
+	Time    time.Time
+	Trace   *Trace
 	current *Trace
 }
 
 func (npt *NPTrace) New(id string, name string, arguments ...interface{}) *Task {
 	now := time.Now()
 	tsk := &Task{
-		id:    id,
-		start: now,
-		trace: &Trace{
-			name:  name,
-			start: now,
-			args:  arguments,
+		Id:   id,
+		Time: now,
+		Trace: &Trace{
+			Name: name,
+			Time: now,
+			Args: arguments,
 		},
 	}
 
-	tsk.current = tsk.trace
+	tsk.current = tsk.Trace
 	return tsk
 }
 
 func (npt *NPTrace) Close(t *Task) (bool, error) {
-	if t == nil || t.trace == nil {
+	if t == nil || t.Trace == nil {
 		return false, nil
 	}
-	t.trace.duration = time.Now().Sub(t.start)
+	t.Trace.Duration = time.Now().Sub(t.Time)
 	b := npt.encoder.Encode(t)
 	n, err := npt.writer.Write(b)
 	return n > 0, err
 }
 
 type Trace struct {
-	name     string
-	start    time.Time
-	duration time.Duration
-	children []*Trace
+	Name     string
+	Time     time.Time
+	Duration time.Duration
+	Children []*Trace
 	parent   *Trace
-	args     []interface{}
+	Args     []interface{}
 }
 
 func (tsk *Task) Start(name string, arguments ...interface{}) *Trace {
 	tr := &Trace{
-		name:   name,
-		start:  time.Now(),
-		args:   arguments,
+		Name:   name,
+		Time:   time.Now(),
+		Args:   arguments,
 		parent: tsk.current,
 	}
 
-	if tsk.current.children == nil {
-		tsk.current.children = []*Trace{tr}
+	if tsk.current.Children == nil {
+		tsk.current.Children = []*Trace{tr}
 	} else {
-		tsk.current.children = append(tsk.current.children, tr)
+		tsk.current.Children = append(tsk.current.Children, tr)
 	}
 
 	tsk.current = tr
@@ -78,26 +78,26 @@ func (tsk *Task) Start(name string, arguments ...interface{}) *Trace {
 }
 
 func (tsk *Task) Stop(t *Trace) {
-	t.duration = time.Now().Sub(t.start)
+	t.Duration = time.Now().Sub(t.Time)
 	tsk.current = t.parent
 }
 
 func (t *Trace) Point(name string, arguments ...interface{}) {
 	p := &Trace{
-		name:   name,
-		args:   arguments,
+		Name:   name,
+		Args:   arguments,
 		parent: t,
 	}
 
-	if t.children == nil {
-		t.children = []*Trace{}
-		p.start = t.start
+	if t.Children == nil {
+		t.Children = []*Trace{}
+		p.Time = t.Time
 	} else {
-		last := t.children[len(t.children)-1]
-		p.start = last.start.Add(last.duration)
+		last := t.Children[len(t.Children)-1]
+		p.Time = last.Time.Add(last.Duration)
 	}
 
-	p.duration = time.Now().Sub(p.start)
+	p.Duration = time.Now().Sub(p.Time)
 
-	t.children = append(t.children, p)
+	t.Children = append(t.Children, p)
 }

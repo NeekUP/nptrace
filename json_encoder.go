@@ -27,11 +27,11 @@ func (enc *jsonEncoder) Encode(npt *Task) []byte {
 		return []byte{}
 	}
 	enc.append('{')
-	enc.addToken("id", npt.id)
+	enc.addToken("id", npt.Id)
 	enc.append(',')
-	enc.addToken("time", npt.start)
+	enc.addToken("time", npt.Time)
 	enc.append(',')
-	enc.addToken("trace", npt.trace)
+	enc.addToken("trace", npt.Trace)
 	enc.append('}')
 
 	return enc.buf
@@ -42,13 +42,13 @@ func (enc *jsonEncoder) encodeTrace(trace *Trace) {
 		return
 	}
 	enc.append('{')
-	enc.addToken("name", trace.name)
+	enc.addToken("name", trace.Name)
 	enc.append(',')
-	enc.addToken("duration", trace.duration)
+	enc.addToken("duration", trace.Duration)
 	enc.append(',')
-	enc.addToken("args", trace.args)
+	enc.addToken("args", trace.Args)
 	enc.append(',')
-	enc.addToken("traces", trace.children)
+	enc.addToken("traces", trace.Children)
 	enc.append('}')
 }
 

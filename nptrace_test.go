@@ -18,27 +18,27 @@ func TestStructure(t *testing.T) {
 	task.Stop(f)
 	npt.Close(task)
 
-	rt := task.trace
+	rt := task.Trace
 
-	if rt.name != "root" {
-		t.Error("first trace not expected")
+	if rt.Name != "root" {
+		t.Error("first Trace not expected")
 		return
 	}
 
 	if rt.parent != nil {
-		t.Error("first trace has parent")
+		t.Error("first Trace has parent")
 		return
 	}
 
-	ft := rt.children[0]
-	if rt.children == nil || len(rt.children) != 1 || ft.children[0].name != "s" || ft.children[1].name != "f1" || ft.children[2].name != "f2" {
-		t.Error("unexpected children of first trace")
+	ft := rt.Children[0]
+	if rt.Children == nil || len(rt.Children) != 1 || ft.Children[0].Name != "s" || ft.Children[1].Name != "f1" || ft.Children[2].Name != "f2" {
+		t.Error("unexpected Children of first Trace")
 		return
 	}
 
-	st := rt.children[0].children[0]
-	if len(st.children) != 2 || st.children[0].name != "s1" || st.children[1].name != "s2" {
-		t.Error("unexpected children of second trace")
+	st := rt.Children[0].Children[0]
+	if len(st.Children) != 2 || st.Children[0].Name != "s1" || st.Children[1].Name != "s2" {
+		t.Error("unexpected Children of second Trace")
 		return
 	}
 }
@@ -46,22 +46,22 @@ func TestStructure(t *testing.T) {
 func TestTrace(t *testing.T) {
 	npt := NewTracer(&fakeEncoder{}, &fakeWriter{})
 	task := npt.New("test", "root", "1", "2", "3", "4")
-	task.Stop(task.trace)
+	task.Stop(task.Trace)
 
-	tr := task.trace
-	if tr.name != "root" {
-		t.Error("Unexpected name")
+	tr := task.Trace
+	if tr.Name != "root" {
+		t.Error("Unexpected Name")
 	}
 
-	if tr.start.After(time.Now()) || tr.start.Before(time.Now().Add(-10*time.Millisecond)) {
+	if tr.Time.After(time.Now()) || tr.Time.Before(time.Now().Add(-10*time.Millisecond)) {
 		t.Error("Start time not valid")
 	}
 
-	if tr.duration == 0 || tr.duration > 10*time.Millisecond {
-		t.Error("duration not valid")
+	if tr.Duration == 0 || tr.Duration > 10*time.Millisecond {
+		t.Error("Duration not valid")
 	}
 
-	if len(tr.args) != 4 {
+	if len(tr.Args) != 4 {
 		t.Error("Unexpected arguments count ")
 	}
 }
@@ -70,25 +70,25 @@ func TestPoint(t *testing.T) {
 	npt := NewTracer(&fakeEncoder{}, &fakeWriter{})
 	task := npt.New("test", "root", "1", "2", "3", "4")
 
-	tr := task.trace
+	tr := task.Trace
 	tr.Point("point", "1", "2")
 
-	task.Stop(task.trace)
+	task.Stop(task.Trace)
 
-	point := tr.children[0]
-	if point.name != "point" {
-		t.Error("Unexpected name")
+	point := tr.Children[0]
+	if point.Name != "point" {
+		t.Error("Unexpected Name")
 	}
 
-	if point.start.After(time.Now()) || point.start.Before(time.Now().Add(-10*time.Millisecond)) {
+	if point.Time.After(time.Now()) || point.Time.Before(time.Now().Add(-10*time.Millisecond)) {
 		t.Error("Start time not valid")
 	}
 
-	if point.duration == 0 || point.duration > 10*time.Millisecond {
-		t.Error("duration not valid")
+	if point.Duration == 0 || point.Duration > 10*time.Millisecond {
+		t.Error("Duration not valid")
 	}
 
-	if len(point.args) != 2 {
+	if len(point.Args) != 2 {
 		t.Error("Unexpected arguments count ")
 	}
 }
